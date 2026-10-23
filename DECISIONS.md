@@ -23,3 +23,5 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **Editar abastecimento trocando o veículo** move o registro para o segmento atual do novo veículo.
 - **Novo abastecimento em veículo arquivado** é recusado pelo repositório.
 - **`app_meta`** entrou no schema Drizzle e na migration inicial.
+- **React Query para dados locais**: `staleTime: Infinity`, sem retry e `networkMode: 'always'` (sem isso, queries pausariam offline). O `RepoContext` chega aos hooks por um `RepoProvider`, o que permite testar hooks e telas com SQLite em memória.
+- **Hook de pós-mutação** (`onFuelingDataChanged`) é o ponto de extensão para reagendar a notificação (T12).
