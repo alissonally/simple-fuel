@@ -14,3 +14,12 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **Datas no domínio** usam aritmética de strings `YYYY-MM-DD` em `src/domain/dates.ts` (sem `date-fns`), para manter o domínio sem dependências e sem fuso.
 - **Validação de odômetro ≤ 0** também é erro (regra "valor ≤ 0" da seção 7 vale para todos os campos numéricos).
 - **Aviso pós-salvamento** (`postSaveNotice`) não oferece "Ignorar" para ciclo já ignorado.
+- **Drizzle estável** (`drizzle-orm` 0.45 / `drizzle-kit` 0.31) em vez do RC 1.0. Índices declarados no formato de array (o formato de objeto do plano está obsoleto); o SQL gerado é o mesmo.
+- **Repositórios síncronos** sobre `BaseSQLiteDatabase<'sync'>`: `expo-sqlite` no app e `better-sqlite3` em memória nos testes, com as mesmas migrations. Dependências (`db`, relógio, `today`, gerador de id) chegam por um `RepoContext`.
+- **UUID v7** via `uuid` com bytes aleatórios do `expo-crypto` (Hermes não garante `crypto.getRandomValues`).
+- **Segmento 1** começa em `1900-01-01`, para aceitar abastecimentos retroativos de qualquer data. Só segmentos criados por "Reiniciar odômetro" começam hoje.
+- **Apelido de veículo** é único entre os veículos ativos (sem diferenciar maiúsculas), o que cobre a regra do `complete-first`.
+- **Último preço** sugerido no formulário é o do mesmo combustível em qualquer veículo (o preço depende do posto, não do carro).
+- **Editar abastecimento trocando o veículo** move o registro para o segmento atual do novo veículo.
+- **Novo abastecimento em veículo arquivado** é recusado pelo repositório.
+- **`app_meta`** entrou no schema Drizzle e na migration inicial.
