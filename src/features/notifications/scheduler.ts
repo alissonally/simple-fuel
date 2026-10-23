@@ -1,18 +1,12 @@
-import {
-  AndroidImportance,
-  cancelAllScheduledNotificationsAsync,
-  getPermissionsAsync,
-  requestPermissionsAsync,
-  SchedulableTriggerInputTypes,
-  scheduleNotificationAsync,
-  setNotificationChannelAsync,
-} from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import type { RepoContext } from '@/db/types';
 import { getMeta, listFuelings, setMeta } from '@/repositories';
 
+import { getNotifications, notificationsSupported } from './module';
 import { planMonthClosing } from './plan';
+
+export { notificationsSupported };
 
 const CHANNEL_ID = 'month-closing';
 const NOTIFICATION_ID = 'month-closing';
@@ -24,26 +18,27 @@ export function notificationsPreference(ctx: RepoContext): boolean | null {
 }
 
 async function ensureChannel() {
-  if (Platform.OS !== 'android') return;
-  await setNotificationChannelAsync(CHANNEL_ID, {
+  const notifications = getNotifications();
+  if (!notifications || Platform.OS !== 'android') return;
+  await notifications.setNotificationChannelAsync(CHANNEL_ID, {
     name: 'Fechamento do mês',
-    importance: AndroidImportance.DEFAULT,
+    importance: notifications.AndroidImportance.DEFAULT,
   });
 }
 
-/** expo-notifications não funciona no web: lá tudo vira no-op. */
-export const notificationsSupported = Platform.OS !== 'web';
-
 export async function hasPermission(): Promise<boolean> {
-  if (!notificationsSupported) return false;
-  const { granted } = await getPermissionsAsync();
+  const notifications = getNotifications();
+  if (!notifications) return false;
+  const { granted } = await notifications.getPermissionsAsync();
   return granted;
 }
 
 async function requestPermission(): Promise<boolean> {
+  const notifications = getNotifications();
+  if (!notifications) return false;
   await ensureChannel();
   if (await hasPermission()) return true;
-  const { granted } = await requestPermissionsAsync();
+  const { granted } = await notifications.requestPermissionsAsync();
   return granted;
 }
 
@@ -52,18 +47,19 @@ async function requestPermission(): Promise<boolean> {
  * Chamado ao abrir o app e após cada mutação.
  */
 export async function rescheduleMonthClosing(ctx: RepoContext, now = new Date()): Promise<void> {
-  if (!notificationsSupported) return;
-  await cancelAllScheduledNotificationsAsync();
+  const notifications = getNotifications();
+  if (!notifications) return;
+  await notifications.cancelAllScheduledNotificationsAsync();
   if (notificationsPreference(ctx) !== true || !(await hasPermission())) return;
 
   const plan = planMonthClosing(now, listFuelings(ctx));
   if (!plan) return;
   await ensureChannel();
-  await scheduleNotificationAsync({
+  await notifications.scheduleNotificationAsync({
     identifier: NOTIFICATION_ID,
     content: { title: plan.title, body: plan.body, data: { url: plan.url } },
     trigger: {
-      type: SchedulableTriggerInputTypes.DATE,
+      type: notifications.SchedulableTriggerInputTypes.DATE,
       date: plan.fireAt,
       channelId: CHANNEL_ID,
     },
@@ -88,6 +84,7 @@ export async function setNotificationsEnabled(
   ctx: RepoContext,
   enabled: boolean,
 ): Promise<boolean> {
+  if (!notificationsSupported) return false;
   const granted = enabled ? await requestPermission() : false;
   setMeta(ctx, 'notifications_enabled', granted ? '1' : '0');
   await rescheduleMonthClosing(ctx);

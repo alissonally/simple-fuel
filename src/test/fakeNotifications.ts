@@ -44,7 +44,8 @@ export const scheduleNotificationAsync = jest.fn(
   },
 );
 export const getAllScheduledNotificationsAsync = jest.fn(async () => state.scheduled);
-export const useLastNotificationResponse = jest.fn(() => state.lastResponse);
+export const getLastNotificationResponseAsync = jest.fn(async () => state.lastResponse);
+export const addNotificationResponseReceivedListener = jest.fn(() => ({ remove: jest.fn() }));
 export const clearLastNotificationResponse = jest.fn(() => {
   state.lastResponse = null;
 });

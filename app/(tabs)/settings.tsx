@@ -63,8 +63,8 @@ export default function SettingsScreen() {
         </View>
       </Section>
 
-      {notificationsSupported ? (
-        <Section title="Notificações">
+      <Section title="Notificações">
+        {notificationsSupported ? (
           <View style={styles.row}>
             <View style={styles.rowBody}>
               <Text style={styles.rowTitle}>Fechamento do mês</Text>
@@ -92,8 +92,15 @@ export default function SettingsScreen() {
               }}
             />
           </View>
-        </Section>
-      ) : null}
+        ) : (
+          <View style={styles.row}>
+            <Text style={styles.muted}>
+              O aviso de fechamento do mês precisa de um development build. Ele não está disponível
+              no Expo Go nem na versão web.
+            </Text>
+          </View>
+        )}
+      </Section>
 
       <Section title="Backup">
         <View style={styles.actions}>

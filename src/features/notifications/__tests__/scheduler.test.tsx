@@ -117,9 +117,32 @@ describe('month closing notification', () => {
     const { Wrapper } = createTestProviders(ctx);
     await render(<NotificationsManager />, { wrapper: Wrapper });
 
+    await jest.runAllTimersAsync();
     expect(router.push).toHaveBeenCalledWith('/monthly?month=2026-09');
     expect(state.lastResponse).toBeNull();
-    await jest.runAllTimersAsync();
     expect(state.scheduled).toHaveLength(1);
+  });
+});
+
+describe('in Expo Go', () => {
+  it('never loads expo-notifications and keeps everything off', async () => {
+    jest.resetModules();
+    jest.doMock('expo', () => ({
+      ...jest.requireActual<typeof import('expo')>('expo'),
+      isRunningInExpoGo: () => true,
+    }));
+    const notifications = jest.requireActual<typeof import('@/test/fakeNotifications')>(
+      '@/test/fakeNotifications',
+    );
+    const scheduler = jest.requireActual<typeof import('../scheduler')>('../scheduler');
+    const { createTestContext: createCtx } =
+      jest.requireActual<typeof import('@/test/db')>('@/test/db');
+
+    const ctx = createCtx();
+    expect(scheduler.notificationsSupported).toBe(false);
+    await scheduler.handleFuelingDataChanged(ctx);
+    expect(await scheduler.setNotificationsEnabled(ctx, true)).toBe(false);
+    expect(notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+    expect(notifications.cancelAllScheduledNotificationsAsync).not.toHaveBeenCalled();
   });
 });
