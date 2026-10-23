@@ -30,6 +30,10 @@ export function onFuelingDataChanged(listener: () => void): () => void {
   return () => dataChangedListeners.delete(listener);
 }
 
+export function notifyFuelingDataChanged(): void {
+  dataChangedListeners.forEach((listener) => listener());
+}
+
 export function useFuelings(scope: VehicleScope | undefined) {
   const ctx = useRepo();
   return useQuery({
@@ -110,7 +114,7 @@ function useFuelingMutation<TArgs, TResult>(fn: (args: TArgs) => TResult) {
       await invalidateFuelingData(client);
       // O veículo ativo pode ter mudado (last_vehicle_id).
       await client.invalidateQueries({ queryKey: queryKeys.activeVehicle() });
-      dataChangedListeners.forEach((listener) => listener());
+      notifyFuelingDataChanged();
     },
   });
 }

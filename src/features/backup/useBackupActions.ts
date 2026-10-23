@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
-import { useRepo } from '@/hooks';
+import { notifyFuelingDataChanged, useRepo } from '@/hooks';
 
 import {
   exportBackup,
@@ -38,7 +38,7 @@ function fail(title: string, error: unknown) {
 }
 
 /** Ações de backup da tela de Ajustes (seção 6.5). */
-export function useBackupActions(onDataChanged?: () => void) {
+export function useBackupActions() {
   const ctx = useRepo();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -74,7 +74,7 @@ export function useBackupActions(onDataChanged?: () => void) {
           if (!mode) return;
           importBackup(ctx, backup, mode);
           await queryClient.invalidateQueries();
-          onDataChanged?.();
+          notifyFuelingDataChanged();
           Alert.alert('Backup importado', 'Seus dados foram restaurados.');
         } catch (error) {
           fail('Não foi possível importar', error);

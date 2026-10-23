@@ -17,6 +17,7 @@ import {
   type VehicleInput,
 } from '@/repositories';
 
+import { notifyFuelingDataChanged } from './fuelings';
 import { invalidateAll, queryKeys } from './keys';
 import { useRepo } from './RepoProvider';
 
@@ -89,7 +90,11 @@ function useVehicleMutation<TArgs, TResult>(fn: (args: TArgs) => TResult) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (args: TArgs) => fn(args),
-    onSuccess: () => invalidateAll(client),
+    onSuccess: async () => {
+      await invalidateAll(client);
+      // Excluir um veículo remove abastecimentos do gasto do mês.
+      notifyFuelingDataChanged();
+    },
   });
 }
 

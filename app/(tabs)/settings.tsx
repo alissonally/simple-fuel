@@ -2,12 +2,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Badge, Button, Card } from '@/components/ui';
 import { FUEL_LABELS } from '@/domain/format';
 import { formatPlate } from '@/domain/plate';
 import { useBackupActions } from '@/features/backup/useBackupActions';
+import { useNotificationSetting } from '@/features/notifications/useNotificationSetting';
 import { useVehicles } from '@/hooks';
 import { colors, spacing } from '@/theme';
 
@@ -23,6 +24,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function SettingsScreen() {
   const vehicles = useVehicles({ includeArchived: true }).data ?? [];
   const backup = useBackupActions();
+  const notification = useNotificationSetting();
+  const denied = notification.preference !== null && notification.granted === false;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -55,6 +58,36 @@ export default function SettingsScreen() {
             title="Adicionar veículo"
             variant="secondary"
             onPress={() => router.push('/vehicle/new')}
+          />
+        </View>
+      </Section>
+
+      <Section title="Notificações">
+        <View style={styles.row}>
+          <View style={styles.rowBody}>
+            <Text style={styles.rowTitle}>Fechamento do mês</Text>
+            <Text style={styles.muted}>
+              {denied
+                ? 'Permissão de notificações negada. Ative-a nas configurações do sistema.'
+                : 'No dia 1, às 9h, um resumo do gasto do mês anterior.'}
+            </Text>
+          </View>
+          <Switch
+            accessibilityLabel="Notificação de fechamento do mês"
+            value={notification.enabled ?? false}
+            disabled={notification.loading}
+            trackColor={{ true: colors.primary, false: colors.border }}
+            onValueChange={(value) => {
+              void notification.setEnabled(value).then((enabled) => {
+                if (value && !enabled) {
+                  Alert.alert(
+                    'Permissão negada',
+                    'Para receber o resumo do mês, permita as notificações do app nas ' +
+                      'configurações do sistema.',
+                  );
+                }
+              });
+            }}
           />
         </View>
       </Section>

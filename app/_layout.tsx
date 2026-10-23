@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { ToastProvider } from '@/components/Toast';
 import { repoContext } from '@/db/client';
 import { DatabaseGate } from '@/db/DatabaseGate';
+import { NotificationsManager } from '@/features/notifications/NotificationsManager';
 import { createQueryClient, RepoProvider } from '@/hooks';
 
 export default function RootLayout() {
@@ -36,6 +37,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
+            <NotificationsManager />
             <StatusBar style="auto" />
           </ToastProvider>
         </QueryClientProvider>
