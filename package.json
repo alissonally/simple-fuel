@@ -37,7 +37,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest",
+    "test": "jest --coverage",
     "test:coverage": "jest --coverage",
     "db:generate": "drizzle-kit generate"
   },
@@ -52,6 +52,21 @@
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|drizzle-orm|uuid|date-fns|react-native-gifted-charts|gifted-charts-core)"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/domain/**/*.ts",
+      "!src/domain/**/__tests__/**"
+    ],
+    "coverageThreshold": {
+      "./src/domain/": {
+        "lines": 95
+      },
+      "./src/domain/money.ts": {
+        "lines": 100
+      },
+      "./src/domain/plate.ts": {
+        "lines": 100
+      }
+    }
   }
 }
