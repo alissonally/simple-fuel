@@ -108,3 +108,37 @@ export function buildCycles(records: FuelingRecord[]): Cycle[] {
   }
   return [...byVehicle.values()].flatMap((list) => markOutliers(closeCycles(list)));
 }
+
+export interface ConsumptionAverages {
+  /** km/l de todos os ciclos não ignorados (inclui mistos). */
+  overall: number | null;
+  /** km/l por combustível, só com ciclos de combustível único. */
+  byFuel: { fuelType: FuelType; kmPerLiter: number; cycles: number }[];
+  validCycles: number;
+}
+
+/** Média ponderada (soma de km ÷ soma de litros) dos ciclos válidos. */
+export function averageConsumption(cycles: Cycle[]): ConsumptionAverages {
+  const valid = cycles.filter((c) => !c.excluded);
+  const ratio = (list: Cycle[]) => {
+    const km = list.reduce((sum, c) => sum + c.km, 0);
+    const ml = list.reduce((sum, c) => sum + c.litersMl, 0);
+    return ml > 0 ? km / (ml / 1000) : null;
+  };
+
+  const groups = new Map<FuelType, Cycle[]>();
+  for (const cycle of valid) {
+    const fuel = singleFuel(cycle);
+    if (fuel) groups.set(fuel, [...(groups.get(fuel) ?? []), cycle]);
+  }
+
+  return {
+    overall: ratio(valid),
+    byFuel: [...groups.entries()].map(([fuelType, list]) => ({
+      fuelType,
+      kmPerLiter: ratio(list) ?? 0,
+      cycles: list.length,
+    })),
+    validCycles: valid.length,
+  };
+}

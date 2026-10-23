@@ -30,3 +30,7 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **Toast** é um componente próprio (`ToastProvider` no layout raiz), com ação opcional, para sobreviver ao fechamento do modal.
 - **Formulário + zod**: o zod checa a estrutura e o `superRefine` aplica os erros de `validation.ts` via `checkFueling` do repositório; os avisos são confirmados no submit. O repositório valida de novo ao gravar.
 - **`@hookform/resolvers` 5** com `zod` 4: a versão 6 traz peers opcionais que quebram a resolução do npm.
+- **Botão "Registrar abastecimento"** fica fixo no rodapé da Início (fora da rolagem).
+- **"Último consumo"** mostra o último ciclo fechado mesmo se ignorado (com badge). A **média geral** é ponderada (soma de km ÷ soma de litros) dos ciclos não ignorados; a média por combustível usa só ciclos de combustível único.
+- **Filtro do Histórico** começa em "Todos" e inclui veículos arquivados que têm registros. Com "Todos", cada item mostra o apelido do veículo.
+- **Testes de tela** ficam em `src/__tests__/screens` (arquivos em `app/` viram rotas). O `expo-router` é mockado e os ícones são substituídos por texto no setup do Jest.

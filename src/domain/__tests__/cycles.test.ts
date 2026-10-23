@@ -1,4 +1,4 @@
-import { buildCycles } from '../cycles';
+import { averageConsumption, buildCycles } from '../cycles';
 import type { FuelingRecord } from '../types';
 import { fueling } from './factories';
 
@@ -256,5 +256,31 @@ describe('buildCycles', () => {
       // 640 / 450 = +42% → outlier
       expect(cycles[4]?.outlier).toBe(true);
     });
+  });
+});
+
+describe('averageConsumption', () => {
+  it('returns nulls without cycles', () => {
+    expect(averageConsumption([])).toEqual({ overall: null, byFuel: [], validCycles: 0 });
+  });
+
+  it('weights by km and liters, skips ignored cycles and splits by single fuel', () => {
+    const cycles = buildCycles([
+      fueling({ odometerKm: 10000 }),
+      fueling({ odometerKm: 10400, totalCents: 20000 }), // gasolina, 400 km / 33,904 L
+      fueling({ odometerKm: 10800, totalCents: 20000, excludeFromAverage: true }), // ignorado
+      fueling({ odometerKm: 11100, totalCents: 20000, fuelType: 'ethanol' }), // etanol
+      fueling({ odometerKm: 11200, fullTank: false, fuelType: 'gasoline', totalCents: 5000 }),
+      fueling({ odometerKm: 11500, totalCents: 15000, fuelType: 'ethanol' }), // misto
+    ]);
+    const averages = averageConsumption(cycles);
+    const validKm = 400 + 300 + 400;
+    const validMl = 33904 + 33904 + (8476 + 25428);
+    expect(averages.validCycles).toBe(3);
+    expect(averages.overall).toBeCloseTo(validKm / (validMl / 1000), 6);
+    expect(averages.byFuel).toEqual([
+      { fuelType: 'gasoline', kmPerLiter: expect.closeTo(400 / 33.904, 6), cycles: 1 },
+      { fuelType: 'ethanol', kmPerLiter: expect.closeTo(300 / 33.904, 6), cycles: 1 },
+    ]);
   });
 });

@@ -24,7 +24,9 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-asset",
+      "expo-font"
     ],
     "scheme": "controlecombustivel",
     "experiments": {
