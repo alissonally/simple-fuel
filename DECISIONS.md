@@ -39,3 +39,5 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **`react-native-gifted-charts`** usa `expo-linear-gradient` e `react-native-svg`; nos testes, o `BarChart` é mockado.
 - **Fluxo do 2º veículo**: após salvar, o novo veículo vira o ativo. Se o app for fechado antes de concluir o `complete-first`, a Início reabre esse passo na próxima abertura. O botão voltar do Android fica bloqueado nessa tela.
 - **Arquivar/Excluir** ficam desabilitados (com explicação) quando o veículo é o único ativo; o repositório também recusa.
+- **Backup JSON** inclui todas as linhas (inclusive com soft delete) das três tabelas; `app_meta` fica de fora (preferências do aparelho). "Substituir tudo" apaga e reinsere; "Mesclar" compara por `id` e mantém o maior `updatedAt`. Tudo numa transação; ao final, garante um veículo ativo.
+- **CSV** traz só abastecimentos ativos, com BOM UTF-8, `;`, `\r\n`, decimais com vírgula e sem separador de milhar (o Excel pt-BR converte para número).

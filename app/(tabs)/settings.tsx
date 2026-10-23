@@ -7,6 +7,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Badge, Button, Card } from '@/components/ui';
 import { FUEL_LABELS } from '@/domain/format';
 import { formatPlate } from '@/domain/plate';
+import { useBackupActions } from '@/features/backup/useBackupActions';
 import { useVehicles } from '@/hooks';
 import { colors, spacing } from '@/theme';
 
@@ -21,6 +22,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export default function SettingsScreen() {
   const vehicles = useVehicles({ includeArchived: true }).data ?? [];
+  const backup = useBackupActions();
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -53,6 +55,29 @@ export default function SettingsScreen() {
             title="Adicionar veículo"
             variant="secondary"
             onPress={() => router.push('/vehicle/new')}
+          />
+        </View>
+      </Section>
+
+      <Section title="Backup">
+        <View style={styles.actions}>
+          <Button
+            title="Exportar dados (JSON)"
+            variant="secondary"
+            disabled={backup.busy}
+            onPress={() => void backup.exportJson()}
+          />
+          <Button
+            title="Importar dados (JSON)"
+            variant="secondary"
+            disabled={backup.busy}
+            onPress={() => void backup.importJson()}
+          />
+          <Button
+            title="Exportar planilha (CSV)"
+            variant="secondary"
+            disabled={backup.busy}
+            onPress={() => void backup.exportCsv()}
           />
         </View>
       </Section>
@@ -92,4 +117,5 @@ const styles = StyleSheet.create({
   rowTitle: { fontSize: 16, color: colors.text, flex: 1 },
   muted: { fontSize: 13, color: colors.muted },
   action: { padding: spacing.md },
+  actions: { padding: spacing.md, gap: spacing.sm },
 });
