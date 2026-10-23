@@ -1,13 +1,95 @@
-import { StyleSheet, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Constants from 'expo-constants';
+import { router } from 'expo-router';
+import type { ReactNode } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-export default function SettingsScreen() {
+import { Badge, Button, Card } from '@/components/ui';
+import { FUEL_LABELS } from '@/domain/format';
+import { formatPlate } from '@/domain/plate';
+import { useVehicles } from '@/hooks';
+import { colors, spacing } from '@/theme';
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <View style={styles.container}>
-      <Text>Ajustes</Text>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Card style={styles.card}>{children}</Card>
     </View>
   );
 }
 
+export default function SettingsScreen() {
+  const vehicles = useVehicles({ includeArchived: true }).data ?? [];
+
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Section title="Veículos">
+        {vehicles.map((vehicle) => (
+          <Pressable
+            key={vehicle.id}
+            accessibilityRole="button"
+            onPress={() => router.push(`/vehicle/${vehicle.id}`)}
+            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+          >
+            <View style={styles.rowBody}>
+              <Text style={styles.rowTitle}>{vehicle.nickname}</Text>
+              <Text style={styles.muted}>
+                {[
+                  vehicle.plate ? formatPlate(vehicle.plate) : null,
+                  [vehicle.brand, vehicle.model].filter(Boolean).join(' ') || null,
+                  FUEL_LABELS[vehicle.defaultFuel],
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+            </View>
+            {vehicle.archivedAt !== null ? <Badge label="arquivado" /> : null}
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Pressable>
+        ))}
+        <View style={styles.action}>
+          <Button
+            title="Adicionar veículo"
+            variant="secondary"
+            onPress={() => router.push('/vehicle/new')}
+          />
+        </View>
+      </Section>
+
+      <Section title="Sobre">
+        <View style={styles.row}>
+          <Text style={styles.rowTitle}>Versão</Text>
+          <Text style={styles.muted}>{Constants.expoConfig?.version ?? '—'}</Text>
+        </View>
+      </Section>
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.md, gap: spacing.lg },
+  section: { gap: spacing.sm },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.muted,
+    textTransform: 'uppercase',
+  },
+  card: { padding: 0, gap: 0 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  pressed: { opacity: 0.6 },
+  rowBody: { flex: 1, gap: 2 },
+  rowTitle: { fontSize: 16, color: colors.text, flex: 1 },
+  muted: { fontSize: 13, color: colors.muted },
+  action: { padding: spacing.md },
 });

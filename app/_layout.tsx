@@ -22,6 +22,19 @@ export default function RootLayout() {
                 options={{ presentation: 'modal', title: 'Novo abastecimento' }}
               />
               <Stack.Screen name="fueling/[id]" options={{ title: 'Editar abastecimento' }} />
+              <Stack.Screen
+                name="vehicle/new"
+                options={{ presentation: 'modal', title: 'Novo veículo' }}
+              />
+              <Stack.Screen name="vehicle/[id]" options={{ title: 'Editar veículo' }} />
+              <Stack.Screen
+                name="vehicle/complete-first"
+                options={{
+                  title: 'Seu primeiro veículo',
+                  headerBackVisible: false,
+                  gestureEnabled: false,
+                }}
+              />
             </Stack>
             <StatusBar style="auto" />
           </ToastProvider>

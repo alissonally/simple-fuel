@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Button, Card, CardTitle, Loading } from '@/components/ui';
@@ -9,7 +9,8 @@ import { averageConsumption } from '@/domain/cycles';
 import { formatDate, monthOf, toISODate } from '@/domain/dates';
 import { FUEL_LABELS, formatKmPerLiter, formatVolume } from '@/domain/format';
 import { formatBRL } from '@/domain/money';
-import { useActiveVehicle, useCycles, useFuelings, useMonthlySummary } from '@/hooks';
+import { useActiveVehicle, useCycles, useFuelings, useMonthlySummary, useRepo } from '@/hooks';
+import { needsFirstVehicleCompletion } from '@/repositories';
 import { colors, spacing } from '@/theme';
 
 const FIRST_CYCLE_MESSAGE = 'O consumo aparece a partir do próximo tanque cheio';
@@ -19,6 +20,13 @@ function newFueling() {
 }
 
 export default function HomeScreen() {
+  const ctx = useRepo();
+
+  // Se o app foi fechado no meio do fluxo do 2º veículo, retoma o passo obrigatório.
+  useEffect(() => {
+    if (needsFirstVehicleCompletion(ctx)) router.push('/vehicle/complete-first');
+  }, [ctx]);
+
   const { vehicle } = useActiveVehicle();
   const vehicleId = vehicle?.id;
   const fuelings = useFuelings(vehicleId);

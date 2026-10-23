@@ -101,7 +101,7 @@ describe('Monthly summary', () => {
 
     await fireEvent.press(await screen.findByText('Todos'));
     expect(await screen.findByText('Gasto por veículo')).toBeTruthy();
-    expect(screen.getByText('R$ 650,00')).toBeTruthy();
+    expect(await screen.findByText('R$ 650,00')).toBeTruthy();
     expect(screen.getAllByText(listVehicles(ctx)[0]?.nickname ?? '')).toHaveLength(2);
     expect(screen.queryByText('Consumo médio')).toBeNull();
   });
