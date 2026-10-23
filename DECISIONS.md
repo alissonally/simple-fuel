@@ -7,3 +7,6 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **`noUncheckedIndexedAccess`** ativado no `tsconfig` além do `strict`, para reforçar a regra "sem `any`" em acessos a arrays.
 - **Ícones** via `@expo/vector-icons` (Ionicons), já incluído no ecossistema Expo.
 - **`react-dom`/`react-native-web`** instalados porque o `expo-router` os exige como peer; também permitem rodar no navegador.
+- **Outlier (T3)**: a mediana de referência usa os *demais* ciclos válidos (o próprio ciclo não entra). Ciclos mistos nunca são marcados. Ciclos ignorados podem ser marcados, mas não servem de referência.
+- **Desempate na ordenação de `buildCycles`**: segmento → odômetro → data → id, para resultado determinístico.
+- **`buildCycles` aceita vários veículos** e processa cada um separadamente, o que simplifica o uso com `'all'`.
