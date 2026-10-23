@@ -3,6 +3,7 @@ import { createTestContext, type TestContext } from '@/test/db';
 
 import { FuelingValidationError } from '../errors';
 import {
+  checkFueling,
   createFueling,
   deleteFueling,
   getFueling,
@@ -191,5 +192,17 @@ describe('fuelings repository', () => {
     const other = createVehicle(ctx, { nickname: 'Moto', defaultFuel: 'gasoline' });
     ctx.sqlite.prepare('update vehicles set archived_at = 1 where id = ?').run(other.id);
     expect(() => createFueling(ctx, input({ vehicleId: other.id }))).toThrow('arquivado');
+  });
+});
+
+describe('checkFueling', () => {
+  it('returns issues without saving', () => {
+    const { ctx, input } = setup();
+    const created = createFueling(ctx, input());
+    expect(checkFueling(ctx, input({ date: '2026-10-02' })).map((i) => i.code)).toEqual([
+      'duplicate_odometer',
+    ]);
+    expect(checkFueling(ctx, input(), created.id)).toEqual([]);
+    expect(listFuelings(ctx)).toHaveLength(1);
   });
 });

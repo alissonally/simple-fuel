@@ -25,3 +25,8 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **`app_meta`** entrou no schema Drizzle e na migration inicial.
 - **React Query para dados locais**: `staleTime: Infinity`, sem retry e `networkMode: 'always'` (sem isso, queries pausariam offline). O `RepoContext` chega aos hooks por um `RepoProvider`, o que permite testar hooks e telas com SQLite em memória.
 - **Hook de pós-mutação** (`onFuelingDataChanged`) é o ponto de extensão para reagendar a notificação (T12).
+- **Campo de data** é um texto com máscara `DD/MM/AAAA` e teclado numérico (padrão: hoje), sem dependência de date picker nativo.
+- **Diálogo de avisos** usa `Alert.alert` com "Revisar" / "Salvar mesmo assim".
+- **Toast** é um componente próprio (`ToastProvider` no layout raiz), com ação opcional, para sobreviver ao fechamento do modal.
+- **Formulário + zod**: o zod checa a estrutura e o `superRefine` aplica os erros de `validation.ts` via `checkFueling` do repositório; os avisos são confirmados no submit. O repositório valida de novo ao gravar.
+- **`@hookform/resolvers` 5** com `zod` 4: a versão 6 traz peers opcionais que quebram a resolução do npm.

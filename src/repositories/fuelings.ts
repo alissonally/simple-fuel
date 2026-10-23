@@ -2,7 +2,13 @@ import { and, desc, eq, getTableColumns, isNull } from 'drizzle-orm';
 
 import { litersFrom } from '@/domain/money';
 import type { FuelingRecord, FuelType } from '@/domain/types';
-import { hasErrors, validateFueling, warningsOf, type ValidationIssue } from '@/domain/validation';
+import {
+  hasErrors,
+  validateFueling,
+  warningsOf,
+  type FuelingInput as UncheckedFuelingInput,
+  type ValidationIssue,
+} from '@/domain/validation';
 import { fuelings, odometerSegments, type SegmentRow } from '@/db/schema';
 import type { RepoContext } from '@/db/types';
 
@@ -89,12 +95,13 @@ function cleanText(value: string | null | undefined): string | null {
   return text ? text : null;
 }
 
-/** Valida contra o segmento e lança se houver erro, ou aviso não confirmado. */
-function validate(
+/** Entrada ainda não validada, como vem do formulário. */
+export type FuelingDraft = UncheckedFuelingInput & { vehicleId: string };
+
+function issuesFor(
   ctx: RepoContext,
-  input: FuelingInput,
+  input: FuelingDraft,
   segment: SegmentRow,
-  options: SaveOptions,
   editingId?: string,
 ): ValidationIssue[] {
   const segmentFuelings = ctx.db
@@ -102,16 +109,50 @@ function validate(
     .from(fuelings)
     .where(and(eq(fuelings.segmentId, segment.id), isNull(fuelings.deletedAt)))
     .all();
-  const issues = validateFueling(input, {
+  return validateFueling(input, {
     today: ctx.today(),
     segmentStartedOn: segment.startedOn,
     segmentFuelings,
     editingId,
   });
+}
+
+/** Segmento em que o abastecimento será gravado (o atual, ou o do registro em edição). */
+function targetSegment(ctx: RepoContext, input: FuelingDraft, editing?: Fueling): SegmentRow {
+  // Trocar de veículo leva o registro para o segmento atual do novo veículo.
+  const segment =
+    editing && input.vehicleId === editing.vehicleId
+      ? getSegment(ctx, editing.segmentId)
+      : currentSegment(ctx, input.vehicleId);
+  if (!segment) throw new DomainError('not_found', 'Segmento de odômetro não encontrado');
+  return segment;
+}
+
+/**
+ * Problemas de validação (seção 7) sem gravar nada. Usado pelo formulário para
+ * mostrar erros nos campos e pedir confirmação dos avisos.
+ */
+export function checkFueling(
+  ctx: RepoContext,
+  input: FuelingDraft,
+  editingId?: string,
+): ValidationIssue[] {
+  const editing = editingId ? getFueling(ctx, editingId) : undefined;
+  return issuesFor(ctx, input, targetSegment(ctx, input, editing), editingId);
+}
+
+/** Valida contra o segmento e lança se houver erro, ou aviso não confirmado. */
+function validate(
+  ctx: RepoContext,
+  input: FuelingInput,
+  segment: SegmentRow,
+  options: SaveOptions,
+  editingId?: string,
+): void {
+  const issues = issuesFor(ctx, input, segment, editingId);
   if (hasErrors(issues) || (warningsOf(issues).length > 0 && !options.confirmWarnings)) {
     throw new FuelingValidationError(issues);
   }
-  return issues;
 }
 
 function activeVehicleOrThrow(ctx: RepoContext, vehicleId: string) {
@@ -173,12 +214,7 @@ export function updateFueling(
   if (!current) throw new DomainError('not_found', 'Abastecimento não encontrado');
   activeVehicleOrThrow(ctx, input.vehicleId);
 
-  // Trocar de veículo leva o registro para o segmento atual do novo veículo.
-  const segment =
-    input.vehicleId === current.vehicleId
-      ? getSegment(ctx, current.segmentId)
-      : currentSegment(ctx, input.vehicleId);
-  if (!segment) throw new DomainError('not_found', 'Segmento de odômetro não encontrado');
+  const segment = targetSegment(ctx, input, current);
   validate(ctx, input, segment, options, id);
 
   const changes = { segmentId: segment.id, ...persistedFields(input), updatedAt: ctx.now() };
