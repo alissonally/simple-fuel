@@ -1,39 +1,43 @@
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { RepoProvider } from '@/hooks/RepoProvider';
 import { colors, spacing } from '@/theme';
 
-import { bootstrapDatabase } from './bootstrap';
-import { db, repoContext } from './client';
-import migrations from './migrations/migrations';
+import { initDatabase } from './client';
+import type { RepoContext } from './types';
 
-function runBootstrap(): { error: Error | null } {
-  try {
-    bootstrapDatabase(repoContext);
-    return { error: null };
-  } catch (e) {
-    return { error: e instanceof Error ? e : new Error(String(e)) };
-  }
-}
+type State = { ctx: RepoContext; error: null } | { ctx: null; error: Error } | null;
 
-/** Roda as migrations e o seed do veículo implícito antes de renderizar o app. */
+/**
+ * Abre o banco, roda as migrations e o seed do veículo implícito antes de renderizar
+ * o app, e disponibiliza o contexto dos repositórios.
+ */
 export function DatabaseGate({ children }: { children: ReactNode }) {
-  const { success, error: migrationError } = useMigrations(db, migrations);
-  // bootstrapDatabase é idempotente, então pode rodar durante a renderização.
-  const bootstrap = useMemo(() => (success ? runBootstrap() : null), [success]);
+  const [state, setState] = useState<State>(null);
 
-  const error = migrationError ?? bootstrap?.error ?? null;
-  if (error) {
+  useEffect(() => {
+    let active = true;
+    initDatabase().then(
+      (ctx) => active && setState({ ctx, error: null }),
+      (e: unknown) =>
+        active && setState({ ctx: null, error: e instanceof Error ? e : new Error(String(e)) }),
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (state?.error) {
     return (
       <View style={styles.center}>
         <Text style={styles.title}>Não foi possível abrir o banco de dados</Text>
-        <Text style={styles.detail}>{error.message}</Text>
+        <Text style={styles.detail}>{state.error.message}</Text>
       </View>
     );
   }
 
-  if (!bootstrap) {
+  if (!state) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={colors.primary} />
@@ -41,7 +45,7 @@ export function DatabaseGate({ children }: { children: ReactNode }) {
     );
   }
 
-  return children;
+  return <RepoProvider value={state.ctx}>{children}</RepoProvider>;
 }
 
 const styles = StyleSheet.create({

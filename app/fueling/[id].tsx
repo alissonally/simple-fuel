@@ -1,6 +1,7 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { goBack } from '@/components/navigation';
 import { Loading } from '@/components/ui';
 import { fromFueling } from '@/features/fueling/formSchema';
 import { FuelingForm } from '@/features/fueling/FuelingForm';
@@ -35,9 +36,9 @@ export default function EditFuelingScreen() {
       initialValues={fromFueling(current)}
       onSave={(input, options) => update.mutateAsync({ id: current.id, input, options })}
       onDelete={() => {
-        void remove.mutateAsync(current.id).then(() => router.back());
+        void remove.mutateAsync(current.id).then(() => goBack());
       }}
-      onDone={() => router.back()}
+      onDone={() => goBack()}
     />
   );
 }

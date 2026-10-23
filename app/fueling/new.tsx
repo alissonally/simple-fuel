@@ -1,5 +1,4 @@
-import { router } from 'expo-router';
-
+import { goBack } from '@/components/navigation';
 import { Loading } from '@/components/ui';
 import { emptyValues } from '@/features/fueling/formSchema';
 import { FuelingForm } from '@/features/fueling/FuelingForm';
@@ -23,7 +22,7 @@ export default function NewFuelingScreen() {
         priceMilli: lastPriceMilli(ctx, vehicle.defaultFuel),
       })}
       onSave={(input, options) => create.mutateAsync({ input, options })}
-      onDone={() => router.back()}
+      onDone={() => goBack()}
     />
   );
 }

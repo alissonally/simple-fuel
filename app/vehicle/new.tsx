@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 
+import { goBack } from '@/components/navigation';
 import { vehicleFormValues, VehicleForm } from '@/features/vehicle/VehicleForm';
 import { useActiveVehicle, useCreateVehicle, useRepo } from '@/hooks';
 import { needsFirstVehicleCompletion } from '@/repositories';
@@ -21,7 +22,7 @@ export default function NewVehicleScreen() {
         if (needsFirstVehicleCompletion(ctx)) {
           router.replace('/vehicle/complete-first');
         } else {
-          router.back();
+          goBack();
         }
       }}
     />

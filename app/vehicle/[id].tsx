@@ -1,6 +1,7 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
+import { goBack } from '@/components/navigation';
 import { Button, Loading } from '@/components/ui';
 import { formatDate } from '@/domain/dates';
 import { vehicleFormValues, VehicleForm } from '@/features/vehicle/VehicleForm';
@@ -56,7 +57,7 @@ export default function EditVehicleScreen() {
       initialValues={vehicleFormValues(current)}
       onSubmit={async (input) => {
         await update.mutateAsync({ id: current.id, input });
-        router.back();
+        goBack();
       }}
     >
       <View style={styles.section}>
@@ -96,7 +97,7 @@ export default function EditVehicleScreen() {
           onPress={() =>
             archive
               .mutateAsync({ id: current.id, archived: !archived })
-              .then(() => router.back())
+              .then(() => goBack())
               .catch(reportError)
           }
         />
@@ -112,7 +113,7 @@ export default function EditVehicleScreen() {
               () =>
                 remove
                   .mutateAsync(current.id)
-                  .then(() => router.back())
+                  .then(() => goBack())
                   .catch(reportError),
             )
           }

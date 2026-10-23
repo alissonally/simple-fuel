@@ -8,6 +8,7 @@ import { Badge, Button, Card } from '@/components/ui';
 import { FUEL_LABELS } from '@/domain/format';
 import { formatPlate } from '@/domain/plate';
 import { useBackupActions } from '@/features/backup/useBackupActions';
+import { notificationsSupported } from '@/features/notifications/scheduler';
 import { useNotificationSetting } from '@/features/notifications/useNotificationSetting';
 import { useVehicles } from '@/hooks';
 import { colors, spacing } from '@/theme';
@@ -62,35 +63,37 @@ export default function SettingsScreen() {
         </View>
       </Section>
 
-      <Section title="Notificações">
-        <View style={styles.row}>
-          <View style={styles.rowBody}>
-            <Text style={styles.rowTitle}>Fechamento do mês</Text>
-            <Text style={styles.muted}>
-              {denied
-                ? 'Permissão de notificações negada. Ative-a nas configurações do sistema.'
-                : 'No dia 1, às 9h, um resumo do gasto do mês anterior.'}
-            </Text>
+      {notificationsSupported ? (
+        <Section title="Notificações">
+          <View style={styles.row}>
+            <View style={styles.rowBody}>
+              <Text style={styles.rowTitle}>Fechamento do mês</Text>
+              <Text style={styles.muted}>
+                {denied
+                  ? 'Permissão de notificações negada. Ative-a nas configurações do sistema.'
+                  : 'No dia 1, às 9h, um resumo do gasto do mês anterior.'}
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel="Notificação de fechamento do mês"
+              value={notification.enabled ?? false}
+              disabled={notification.loading}
+              trackColor={{ true: colors.primary, false: colors.border }}
+              onValueChange={(value) => {
+                void notification.setEnabled(value).then((enabled) => {
+                  if (value && !enabled) {
+                    Alert.alert(
+                      'Permissão negada',
+                      'Para receber o resumo do mês, permita as notificações do app nas ' +
+                        'configurações do sistema.',
+                    );
+                  }
+                });
+              }}
+            />
           </View>
-          <Switch
-            accessibilityLabel="Notificação de fechamento do mês"
-            value={notification.enabled ?? false}
-            disabled={notification.loading}
-            trackColor={{ true: colors.primary, false: colors.border }}
-            onValueChange={(value) => {
-              void notification.setEnabled(value).then((enabled) => {
-                if (value && !enabled) {
-                  Alert.alert(
-                    'Permissão negada',
-                    'Para receber o resumo do mês, permita as notificações do app nas ' +
-                      'configurações do sistema.',
-                  );
-                }
-              });
-            }}
-          />
-        </View>
-      </Section>
+        </Section>
+      ) : null}
 
       <Section title="Backup">
         <View style={styles.actions}>

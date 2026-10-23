@@ -31,7 +31,11 @@ async function ensureChannel() {
   });
 }
 
+/** expo-notifications não funciona no web: lá tudo vira no-op. */
+export const notificationsSupported = Platform.OS !== 'web';
+
 export async function hasPermission(): Promise<boolean> {
+  if (!notificationsSupported) return false;
   const { granted } = await getPermissionsAsync();
   return granted;
 }
@@ -48,6 +52,7 @@ async function requestPermission(): Promise<boolean> {
  * Chamado ao abrir o app e após cada mutação.
  */
 export async function rescheduleMonthClosing(ctx: RepoContext, now = new Date()): Promise<void> {
+  if (!notificationsSupported) return;
   await cancelAllScheduledNotificationsAsync();
   if (notificationsPreference(ctx) !== true || !(await hasPermission())) return;
 
@@ -70,6 +75,7 @@ export async function rescheduleMonthClosing(ctx: RepoContext, now = new Date())
  * pede a permissão. Depois, reagenda.
  */
 export async function handleFuelingDataChanged(ctx: RepoContext): Promise<void> {
+  if (!notificationsSupported) return;
   if (notificationsPreference(ctx) === null && listFuelings(ctx).length > 0) {
     const granted = await requestPermission();
     setMeta(ctx, 'notifications_enabled', granted ? '1' : '0');

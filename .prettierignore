@@ -3,3 +3,4 @@ coverage
 .expo
 dist
 src/db/migrations
+expo-env.d.ts
