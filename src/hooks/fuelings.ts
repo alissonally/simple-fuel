@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { buildCycles } from '@/domain/cycles';
 import { summarizeMonth, summarizeRange } from '@/domain/monthly';
@@ -67,6 +67,7 @@ export function useMonthlySummary(month: string, scope: VehicleScope | undefined
       return summarizeMonth(month, records, buildCycles(records), scope ?? 'all');
     },
     enabled: Boolean(scope),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -79,6 +80,7 @@ export function useMonthlyRange(months: string[], scope: VehicleScope | undefine
       return summarizeRange(months, records, buildCycles(records), scope ?? 'all');
     },
     enabled: Boolean(scope),
+    placeholderData: keepPreviousData,
   });
 }
 

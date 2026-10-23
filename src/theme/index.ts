@@ -9,6 +9,7 @@ export const colors = {
   danger: '#C62828',
   warning: '#B26A00',
   toast: '#24292E',
+  chartMuted: '#A7D7C5',
 } as const;
 
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;

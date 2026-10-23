@@ -34,3 +34,6 @@ Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da se�
 - **"Último consumo"** mostra o último ciclo fechado mesmo se ignorado (com badge). A **média geral** é ponderada (soma de km ÷ soma de litros) dos ciclos não ignorados; a média por combustível usa só ciclos de combustível único.
 - **Filtro do Histórico** começa em "Todos" e inclui veículos arquivados que têm registros. Com "Todos", cada item mostra o apelido do veículo.
 - **Testes de tela** ficam em `src/__tests__/screens` (arquivos em `app/` viram rotas). O `expo-router` é mockado e os ícones são substituídos por texto no setup do Jest.
+- **Resumo mensal**: o segmento começa no veículo ativo; "Todos" mostra gasto, litros, km, contagem e preço médio (sem consumo e custo/km) e a tabela de gasto por veículo. O gráfico cobre os 6 meses que terminam no mês atual (ou no mês escolhido, se ele for mais antigo), com a barra do mês selecionado em destaque.
+- **Parâmetro `month`** inválido ou futuro é ignorado ou limitado ao mês atual.
+- **`react-native-gifted-charts`** usa `expo-linear-gradient` e `react-native-svg`; nos testes, o `BarChart` é mockado.
