@@ -1,6 +1,6 @@
 # Decisões
 
-Decisões não cobertas por `docs/aplno.md`, registradas conforme a regra da seção 1.
+Decisões não cobertas por `docs/plano.md`, registradas conforme a regra da seção 1.
 
 - **Expo SDK 58** (estável mais recente em 23/10/2026).
 - **Rotas em `app/` na raiz**, como na estrutura da seção 3 (o template do Expo sugere `src/app/`; o plano prevalece).
