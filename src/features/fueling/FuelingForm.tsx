@@ -2,8 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { FormScrollView } from '@/components/FormScrollView';
 import { Button, Chips, Field, Input } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 import { buildCycles } from '@/domain/cycles';
@@ -153,11 +154,7 @@ export function FuelingForm({
   const vehicleOptions = vehicles.map((v) => ({ value: v.id, label: v.nickname }));
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-      automaticallyAdjustKeyboardInsets
-    >
+    <FormScrollView contentContainerStyle={styles.container}>
       {vehicles.length > 1 ? (
         <Field label="Veículo" error={errors.vehicleId?.message}>
           <Controller
@@ -340,7 +337,7 @@ export function FuelingForm({
 
       <Button title="Salvar" large onPress={submit} loading={isSubmitting} testID="save" />
       {onDelete ? <Button title="Excluir" variant="danger" onPress={confirmDelete} /> : null}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

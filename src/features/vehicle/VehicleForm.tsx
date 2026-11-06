@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { z } from 'zod';
 
+import { FormScrollView } from '@/components/FormScrollView';
 import { Button, Chips, Field, Input } from '@/components/ui';
 import { FUEL_LABELS } from '@/domain/format';
 import { formatPlate, normalizePlate } from '@/domain/plate';
@@ -115,7 +116,7 @@ export function VehicleForm({
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.container}>
       {intro ? <Text style={styles.intro}>{intro}</Text> : null}
       {text('nickname', 'Apelido', { placeholder: 'Ex.: Carro da família' })}
       {text('plate', 'Placa', { autoCapitalize: 'characters', placeholder: 'ABC-1234' })}
@@ -139,7 +140,7 @@ export function VehicleForm({
       {formError ? <Text style={styles.error}>{formError}</Text> : null}
       <Button title={submitLabel} large onPress={submit} loading={isSubmitting} testID="save" />
       {children}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 
