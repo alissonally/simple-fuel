@@ -312,13 +312,17 @@ function lastIndexOf(pattern: RegExp, text: string): number {
 }
 
 /** Decide o papel de um número pelas palavras ao redor. */
-function roleFromContext(prefix: string, suffix: string): Role | null {
-  if (/^\s*(km|kms|quilometros?|kilometros?)\b/.test(suffix)) return 'odometer';
+function roleFromContext(prefix: string, suffix: string, hasNext: boolean): Role | null {
+  // "valor 200 km 85500": um "km" solto entre dois números é rótulo do seguinte.
+  const kmLabelsNext = hasNext && /^\s*kms?\s*$/.test(suffix);
+  if (!kmLabelsNext && /^\s*(km|kms|quilometros?|kilometros?)\b/.test(suffix)) return 'odometer';
   if (/^\s*(reais\s+)?(o|por|cada|\/)\s*(litro|l)\b/.test(suffix)) return 'price';
-  if (/^\s*(litros?|l)\b/.test(suffix)) return 'volume';
+  // A palavra antes do número vale mais que "litro" depois dele: no ditado, sem
+  // pontuação, "odômetro 85500 litro a 6,65" não é um volume.
   const price = lastIndexOf(PRICE_WORDS, prefix);
   const odometer = lastIndexOf(ODOMETER_WORDS, prefix);
   if (price >= 0 || odometer >= 0) return price > odometer ? 'price' : 'odometer';
+  if (/^\s*(litros?|l)\b/.test(suffix)) return 'volume';
   if (/^\s*reais\b/.test(suffix) || lastIndexOf(TOTAL_WORDS, prefix) >= 0) return 'total';
   return null;
 }
@@ -357,7 +361,7 @@ export function parseFuelingText(text: string, today: string): ParsedFueling {
   const roles: (Role | null)[] = tokens.map((token, i) => {
     const prefix = normalized.slice(tokens[i - 1]?.end ?? 0, token.start);
     const suffix = normalized.slice(token.end, tokens[i + 1]?.start ?? normalized.length);
-    return roleFromContext(prefix, suffix);
+    return roleFromContext(prefix, suffix, i < tokens.length - 1);
   });
 
   const values: Partial<Record<Role, NumberToken>> = {};

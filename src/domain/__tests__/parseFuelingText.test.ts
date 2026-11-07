@@ -72,6 +72,24 @@ describe('parseFuelingText', () => {
     });
   });
 
+  it('reads dictated text without punctuation', () => {
+    expect(parse('200 reais odômetro 85.500 litro a 6,65 ontem')).toEqual({
+      date: '2026-11-06',
+      odometerKm: 85500,
+      pricePerLiterMilli: 6650,
+      totalCents: 20000,
+    });
+    expect(parse('85500 km 6,65 o litro')).toEqual({
+      odometerKm: 85500,
+      pricePerLiterMilli: 6650,
+    });
+    expect(parse('valor 200 km 85500 preço 6,65')).toMatchObject({
+      odometerKm: 85500,
+      pricePerLiterMilli: 6650,
+      totalCents: 20000,
+    });
+  });
+
   it('guesses numbers without context', () => {
     expect(parse('85500 200 6,65')).toEqual({
       odometerKm: 85500,

@@ -36,7 +36,14 @@
       "expo-sqlite",
       "expo-asset",
       "expo-font",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Permita o uso do microfone para ditar abastecimentos.",
+          "speechRecognitionPermission": "Permita o reconhecimento de voz para transformar o que você fala em um abastecimento."
+        }
+      ]
     ],
     "scheme": "controlecombustivel",
     "experiments": {
