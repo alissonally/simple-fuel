@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { formatDate, toISODate } from '@/domain/dates';
 import { digitsOnly, maskDecimalInput, maskIntegerInput, parseDateInput } from '@/domain/format';
+import type { ParsedFueling } from '@/domain/parseFuelingText';
 import { FUEL_TYPES, type FuelType } from '@/domain/types';
 import type { FuelingField, ValidationIssue } from '@/domain/validation';
 import type { Fueling, FuelingDraft, FuelingInput } from '@/repositories';
@@ -81,6 +82,21 @@ export function fromFueling(fueling: Fueling): FuelingFormValues {
     station: fueling.station ?? '',
     notes: fueling.notes ?? '',
   };
+}
+
+/** Campos reconhecidos numa frase, já com as máscaras do formulário. */
+export function parsedToFormValues(parsed: ParsedFueling): Partial<FuelingFormValues> {
+  const values: Partial<FuelingFormValues> = {};
+  if (parsed.date) values.date = formatDate(parsed.date);
+  if (parsed.odometerKm) values.odometer = maskIntegerInput(String(parsed.odometerKm));
+  if (parsed.pricePerLiterMilli) {
+    values.price = maskDecimalInput(String(parsed.pricePerLiterMilli), 3);
+  }
+  if (parsed.totalCents) values.total = maskDecimalInput(String(parsed.totalCents), 2);
+  if (parsed.fullTank !== undefined) values.fullTank = parsed.fullTank;
+  if (parsed.fuelType) values.fuelType = parsed.fuelType;
+  if (parsed.station) values.station = parsed.station;
+  return values;
 }
 
 export function emptyValues({

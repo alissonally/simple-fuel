@@ -19,6 +19,7 @@ import {
   maskIntegerInput,
 } from '@/domain/format';
 import { litersFrom } from '@/domain/money';
+import { parseFuelingText } from '@/domain/parseFuelingText';
 import { FUEL_TYPES, type FuelType } from '@/domain/types';
 import { postSaveNotice, warningsOf, type ValidationIssue } from '@/domain/validation';
 import type { VehicleRow } from '@/db/schema';
@@ -35,9 +36,26 @@ import {
 } from '@/repositories';
 import { colors, spacing } from '@/theme';
 
-import { fuelingFormSchema, toFuelingInput, type FuelingFormValues } from './formSchema';
+import {
+  fuelingFormSchema,
+  parsedToFormValues,
+  toFuelingInput,
+  type FuelingFormValues,
+} from './formSchema';
+import { QuickEntry } from './QuickEntry';
 
 const FUEL_OPTIONS = FUEL_TYPES.map((value) => ({ value, label: FUEL_LABELS[value] }));
+
+/** Nomes dos campos na mensagem do preenchimento por texto, na ordem da tela. */
+const QUICK_ENTRY_LABELS: [keyof FuelingFormValues, string][] = [
+  ['odometer', 'odômetro'],
+  ['price', 'preço'],
+  ['total', 'valor'],
+  ['fullTank', 'tanque'],
+  ['fuelType', 'combustível'],
+  ['date', 'data'],
+  ['station', 'posto'],
+];
 
 export interface FuelingFormProps {
   initialValues: FuelingFormValues;
@@ -86,6 +104,7 @@ export function FuelingForm({
     control,
     handleSubmit,
     setValue,
+    clearErrors,
     getFieldState,
     formState: { errors, isSubmitting },
   } = useForm<FuelingFormValues>({ defaultValues: initialValues, resolver });
@@ -108,6 +127,23 @@ export function FuelingForm({
     const totalCents = Number(digitsOnly(total));
     return priceMilli > 0 && totalCents > 0 ? litersFrom(totalCents, priceMilli) : null;
   }, [price, total]);
+
+  const applyText = (text: string): string[] => {
+    const values = parsedToFormValues(parseFuelingText(text, ctx.today()));
+    const filled = QUICK_ENTRY_LABELS.filter(([name]) => values[name] !== undefined);
+    // Campos preenchidos contam como editados (o preço sugerido não os sobrescreve).
+    const dirty = { shouldDirty: true };
+    if (values.odometer !== undefined) setValue('odometer', values.odometer, dirty);
+    if (values.price !== undefined) setValue('price', values.price, dirty);
+    if (values.total !== undefined) setValue('total', values.total, dirty);
+    if (values.fullTank !== undefined) setValue('fullTank', values.fullTank, dirty);
+    if (values.fuelType !== undefined) setValue('fuelType', values.fuelType, dirty);
+    if (values.date !== undefined) setValue('date', values.date, dirty);
+    if (values.station !== undefined) setValue('station', values.station, dirty);
+    clearErrors(filled.map(([name]) => name));
+    if (values.station) setShowDetails(true);
+    return filled.map(([, label]) => label);
+  };
 
   const announceCycle = (saved: Fueling) => {
     const notice = postSaveNotice(saved.id, buildCycles(listFuelings(ctx, saved.vehicleId)));
@@ -155,6 +191,8 @@ export function FuelingForm({
 
   return (
     <FormScrollView contentContainerStyle={styles.container}>
+      {editingId ? null : <QuickEntry onApply={applyText} />}
+
       {vehicles.length > 1 ? (
         <Field label="Veículo" error={errors.vehicleId?.message}>
           <Controller
